@@ -1,0 +1,82 @@
+version: "3.9"
+
+services:
+  redis:
+    image: redis
+    restart: always
+
+  db:
+    image: postgres
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+
+  web:
+    restart: always
+    build: .
+    command: sh -c "cd notifications && python manage.py makemigrations notification_service && python manage.py migrate notification_service && python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - "8000:8000"
+    environment:
+      - POSTGRES_NAME=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - JWT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTQxNjQ5NjcsImlzcyI6ImZhYnJpcXVlIiwibmFtZSI6IkZsYXZpdXNCZWxpc2FyaXVzIn0.lXvT78DY5AaYIU0Cxe3-8WooRbxVP8zkdzqaU46kd84
+      - FETCH_URL=https://probe.fbrq.cloud/
+      - RECEIVER_EMAIL="test@reseiver.com"
+    env_file:
+      - .env
+    depends_on:
+      - db
+
+  worker:
+    build: .
+    restart: always
+    command: ['celery', '--workdir=./notifications', '-A', 'notifications', 'worker']
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379
+      - CELERY_RESULT_BACKEND=redis://redis:6379
+      - JWT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTQxNjQ5NjcsImlzcyI6ImZhYnJpcXVlIiwibmFtZSI6IkZsYXZpdXNCZWxpc2FyaXVzIn0.lXvT78DY5AaYIU0Cxe3-8WooRbxVP8zkdzqaU46kd84
+      - FETCH_URL=https://probe.fbrq.cloud/
+      - RECEIVER_EMAIL="test@reseiver.com"
+    volumes:
+      - .:/code
+    depends_on:
+      - redis
+      - web
+      - db
+
+  dashboard:
+    container_name: dashboard
+    build: .
+    command: celery flower -A tasks --broker=redis://redis:6379
+    ports:
+      - 5555:5555
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379
+      - CELERY_RESULT_BACKEND=redis://redis:6379
+    depends_on:
+      - redis
+      - web
+      - worker
+
+  celery-beats:
+    restart: always
+    build: .
+    command: [ 'celery', '--workdir=./notifications', '-A', 'notifications', 'beat', '-l', 'INFO' ]
+    depends_on:
+      - redis
+      - db
+      - web
+    environment:
+      - POSTGRES_NAME=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - CELERY_BROKER_URL=redis://redis:6379
+      - CELERY_RESULT_BACKEND=redis://redis:6379
+      - JWT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTQxNjQ5NjcsImlzcyI6ImZhYnJpcXVlIiwibmFtZSI6IkZsYXZpdXNCZWxpc2FyaXVzIn0.lXvT78DY5AaYIU0Cxe3-8WooRbxVP8zkdzqaU46kd84
+      - FETCH_URL=https://probe.fbrq.cloud/
+      - RECEIVER_EMAIL="test@reseiver.com"
