@@ -89,7 +89,7 @@ class TestMailingAPI(TestCase):
             "start_datetime": timezone.now(),
             "text": "some_text",
             "filter_tag": "some_tag",
-            "filter_code": "some_code",
+            "filter_code": "",
             "end_datetime": timezone.now()
         }
         test = Mailing.objects.create(
@@ -111,7 +111,7 @@ class TestMailingAPI(TestCase):
             "text": "some_other_text",
             "filter_tag": "some_other_tag",
             "end_datetime": timezone.now(),
-            "filter_code": "some_other_code"
+            "filter_code": ""
         }
         self.response = self.client.post(
             self.mailing_url,
@@ -150,7 +150,7 @@ class TestMailingAPI(TestCase):
             "text": "some_text_but_another",
             "filter_tag": "some_tag",
             "end_datetime": timezone.now(),
-            "filter_code": "some_code"
+            "filter_code": ""
         }
         self.response = self.client.put(
             self.mailing_url + str(self.mailing_id),
