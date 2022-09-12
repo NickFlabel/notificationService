@@ -24,8 +24,8 @@ services:
       - POSTGRES_NAME=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - JWT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTQxNjQ5NjcsImlzcyI6ImZhYnJpcXVlIiwibmFtZSI6IkZsYXZpdXNCZWxpc2FyaXVzIn0.lXvT78DY5AaYIU0Cxe3-8WooRbxVP8zkdzqaU46kd84
-      - FETCH_URL=https://probe.fbrq.cloud/
+      - JWT='token'
+      - FETCH_URL='testurl'
       - RECEIVER_EMAIL="test@reseiver.com"
     env_file:
       - .env
@@ -39,8 +39,8 @@ services:
     environment:
       - CELERY_BROKER_URL=redis://redis:6379
       - CELERY_RESULT_BACKEND=redis://redis:6379
-      - JWT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2OTQxNjQ5NjcsImlzcyI6ImZhYnJpcXVlIiwibmFtZSI6IkZsYXZpdXNCZWxpc2FyaXVzIn0.lXvT78DY5AaYIU0Cxe3-8WooRbxVP8zkdzqaU46kd84
-      - FETCH_URL=https://probe.fbrq.cloud/
+      - JWT='token'
+      - FETCH_URL='testurl'
       - RECEIVER_EMAIL="test@reseiver.com"
     volumes:
       - .:/code
